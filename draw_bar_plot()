@@ -1,0 +1,29 @@
+def draw_bar_plot():
+    # Read and clean data
+    df = pd.read_csv('fcc-forum-pageviews.csv', parse_dates=['date'], index_col='date')
+    df = df[(df['value'] >= df['value'].quantile(0.025)) &
+            (df['value'] <= df['value'].quantile(0.975))]
+
+    # Prepare data
+    df_bar = df.copy()
+    df_bar['year'] = df_bar.index.year
+    df_bar['month'] = df_bar.index.strftime('%B')
+    df_bar['month_num'] = df_bar.index.month
+
+    # Sort months in calendar order
+    df_bar = df_bar.sort_values('month_num')
+
+    # Group data
+    df_grouped = df_bar.groupby(['year', 'month']).mean().reset_index()
+
+    # Draw bar plot
+    fig = plt.figure(figsize=(10, 8))
+    sns.barplot(data=df_grouped, x='year', y='value', hue='month', palette='tab10')
+    plt.xlabel('Years')
+    plt.ylabel('Average Page Views')
+    plt.legend(title='Months')
+    plt.tight_layout()
+
+    # Save image
+    fig.savefig('bar_plot.png')
+    return fig
